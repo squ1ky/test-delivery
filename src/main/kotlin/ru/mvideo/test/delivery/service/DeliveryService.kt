@@ -1,6 +1,7 @@
 package ru.mvideo.test.delivery.service
 
 import org.springframework.stereotype.Service
+import ru.mvideo.test.delivery.exception.DeliveryNotFoundException
 import ru.mvideo.test.delivery.model.Delivery
 import ru.mvideo.test.delivery.model.DeliveryStatus
 import ru.mvideo.test.delivery.repository.DeliveryRepository
@@ -38,5 +39,14 @@ class DeliveryService(
 
     fun getAllDeliveries(): List<Delivery> {
         return deliveryRepository.findAll()
+    }
+
+    fun updateStatus(deliveryId: Long, newStatus: DeliveryStatus): Delivery {
+        val delivery = deliveryRepository.findById(deliveryId) ?: throw DeliveryNotFoundException(deliveryId)
+
+        DeliveryStatusTransitionValidator.validateTransition(delivery.status, newStatus)
+
+        delivery.status = newStatus
+        return deliveryRepository.save(delivery)
     }
 }
